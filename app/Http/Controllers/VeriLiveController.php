@@ -14,15 +14,8 @@ class VeriLiveController extends Controller
     }
 
     public function index(Request $request){
-        if (!$handle = fopen(public_path('verilive/'). str_random(40) . '.json', 'a')) {
-            return "Не могу открыть файл ($filename)";
-        }
-
-        if (fwrite($handle, json_encode($request->all())) === FALSE) {
-            return "Не могу произвести запись в файл ($filename)";
-        }
-
-        fclose($handle);
+        $imageName = str_random(10).'.'.'png';
+        \File::put(public_path('verilive/') . $imageName, base64_decode(json_decode(json_encode($request->json()->all()))->bestframe));
 
         return response()->json([
             'status' => true, 
