@@ -15,6 +15,8 @@ class ChangeNameEmailTable extends Migration
     {
         Schema::table('users', function(Blueprint $table){
             $table->renameColumn('email', 'phone');
+            $table->string('session')->nullable();
+            $table->string('image')->nullable();
         });
     }
 
@@ -27,6 +29,8 @@ class ChangeNameEmailTable extends Migration
     {
         Schema::table('users', function(Blueprint $table) {
             $table->renameColumn('phone', 'email');
+            $table->dropColumn('session');
+            $table->dropColumn('image');
         });
     }
 }
