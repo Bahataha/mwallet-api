@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Google\Cloud\Vision\VisionClient;
 use App\Kyc\KycSystems;
 use GuzzleHttp\Psr7;
+use thiagoalessio\TesseractOCR\TesseractOCR;
 
 class CloudController extends Controller
 {
@@ -14,9 +14,9 @@ class CloudController extends Controller
 
     private $vision;
 
-    public function __construct(KycSystems $service, VisionClient $vision){
+    public function __construct(KycSystems $service, TesseractOCR $vision){
         $this->kycService = $service;
-        $this->vision = new $vision(['keyFile' => json_decode(file_get_contents('optical-office-325209-66df3fdf533e.json'), true)]);
+        $this->vision = $vision;
     }
 
     public function index(Request $request)
@@ -30,19 +30,17 @@ class CloudController extends Controller
         }
         else{
             return response()->json([
-                'status' => false, 
+                'status' => false,
                 'message' => 'фотография не были переданы'
             ]);
         }
-        
+
         $path = Storage::disk('public')->path('') . $fileName;
-        
-        $image = $this->vision->image(fopen($path, 'r'), [
-            'TEXT_DETECTION'
-        ]);
-        
+
+        return $this->vision->image($path)->run();
+
         $result = $this->vision->annotate($image);
-        
+
         foreach($result->info()['textAnnotations'] as $key => $item){
             if(strlen($item['description']) == 12){
                 $item['description'] = intval($item['description']);
@@ -65,7 +63,7 @@ class CloudController extends Controller
                 "message" => "ИИН не найден"
             ]);
         }
-        
+
 
         return $this->kycService->verify(['image' => $path], $iin);
     }
