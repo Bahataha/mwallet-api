@@ -37,7 +37,7 @@ class CloudController extends Controller
 
         $path = Storage::disk('public')->path('') . $fileName;
 
-        return $this->vision->image($path)->run();
+        return $this->vision->image($path)->allowlist(range(0, 9))->run();
 
         $result = $this->vision->annotate($image);
 
